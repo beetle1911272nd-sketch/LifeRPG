@@ -1,0 +1,40 @@
+{
+  "name": "REAL LIFE RPG",
+  "short_name": "LIFE RPG",
+  "description": "日々の行動を記録して、現実の自分を育てるRPG",
+  "lang": "ja",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090b12",
+  "theme_color": "#090b12",
+  "shortcuts": [
+    {
+      "name": "LIFE RPG Widget",
+      "short_name": "Widget",
+      "url": "/?widget=medium",
+      "icons": [{ "src": "/icons/icon-192-v5.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Today's Action",
+      "short_name": "Action",
+      "url": "/?screen=actions",
+      "icons": [{ "src": "/icons/icon-192-v5.png", "sizes": "192x192" }]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192-v5.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512-v5.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

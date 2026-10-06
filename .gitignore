@@ -1,0 +1,13 @@
+.DS_Store
+
+# Web app dependencies and build output
+application/node_modules/
+application/dist/
+application/.vercel/
+application/.env
+application/.env.*
+!application/.env.example
+
+# Godot editor caches and local export settings
+godot/.godot/
+godot/.DS_Store
