@@ -22,7 +22,7 @@ LifeRPG は、共有で進めるプロジェクトの計画・実装・レビュ
 
 - `README.md`: 目的・方針・運用の概要
 - `CONTRIBUTING.md`: 参加方法と作業フロー
-- `docs/`: 詳細な設計や運用メモ
+- `docs/`: 詳細な設計や運用メモ。Unity / iOS初回リリースのMVP案は [`docs/project-board.md`](docs/project-board.md) を参照
 - `application/`: LIFE RPG Webアプリ、Supabaseスキーマ、関連ツールとテスト
 - `godot/`: Godot 4.xゲーム本体、アセット、PWA用ツール
 - `.github/ISSUE_TEMPLATE/`: Issue のテンプレート
@@ -41,6 +41,6 @@ Webアプリは `application/sandbox/` から起動・ビルドできます。Go
 - 目的と対象ユーザーの明確化
 - 実装技術の選定
 - GitHub Projects の運用ルール確定
-- 初期の MVP の定義
+- Unity / iOS版MVP案の合意と未決事項の整理
 
 このリポジトリは、LifeRPG の共通基盤として使い、将来の機能開発をスムーズに進めるための土台です。
