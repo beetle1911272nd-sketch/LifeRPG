@@ -1,0 +1,25 @@
+{
+  "buildCommand": "npm --prefix sandbox run build",
+  "outputDirectory": "sandbox/dist",
+  "installCommand": "npm --prefix sandbox install",
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
