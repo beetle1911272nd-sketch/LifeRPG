@@ -16,6 +16,9 @@ var _target_level: Label
 var _target_bar: ProgressBar
 var _toasts: VBoxContainer
 var _shop_prompt: Label
+var _guide: PanelContainer
+var shop_nearby := false
+var _touch := false
 
 
 func _ready() -> void:
@@ -79,6 +82,7 @@ func _build_target_panel() -> void:
 
 func _build_guide() -> void:
 	var panel := PanelContainer.new()
+	_guide = panel
 	var sb := UiStyle.panel_box(Color(0.03, 0.04, 0.1, 0.6), Color(0, 0, 0, 0))
 	sb.set_content_margin_all(8)
 	panel.add_theme_stylebox_override("panel", sb)
@@ -127,7 +131,14 @@ func show_pickup(item_id: String, amount: int) -> void:
 
 
 func show_shop_prompt(is_near: bool) -> void:
+	shop_nearby = is_near
 	_shop_prompt.visible = is_near
+
+
+func set_touch_mode(active: bool) -> void:
+	_touch = active
+	_guide.visible = not active
+	_shop_prompt.text = "「話す」で 旅人の露店" if active else "[E] 旅人の露店"
 
 
 func show_message(text: String, color: Color = UiStyle.WHITE) -> void:

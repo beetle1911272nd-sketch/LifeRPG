@@ -110,6 +110,13 @@ func heal_player(amount: int) -> void:
 func begin_play() -> void:
 	is_in_game = true
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	set_gameplay_input(true)
+
+
+## プレイ中はタッチをマウス扱いにしない(攻撃の二重発火・カメラ漏れ防止)。
+## メニュー/タイトルではボタン操作のためにエミュレートを戻す。
+func set_gameplay_input(playing: bool) -> void:
+	Input.emulate_mouse_from_touch = not playing
 
 
 func leave_to_title() -> void:
@@ -117,6 +124,7 @@ func leave_to_title() -> void:
 	is_in_game = false
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	set_gameplay_input(false)
 	get_tree().change_scene_to_file(TITLE_SCENE)
 
 

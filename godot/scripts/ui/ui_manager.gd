@@ -8,6 +8,8 @@ var levelup: LevelUpOverlay
 var inventory_panel: InventoryPanel
 var status_panel: StatusPanel
 var shop_panel: ShopPanel
+var touch: TouchControls
+var _close_button: Button
 
 
 func _ready() -> void:
@@ -25,6 +27,16 @@ func _ready() -> void:
 	shop_panel = ShopPanel.new()
 	add_child(shop_panel)
 
+	touch = TouchControls.new()
+	touch.hud = hud
+	add_child(touch)
+	touch.touch_mode_changed.connect(hud.set_touch_mode)
+	hud.set_touch_mode(touch.touch_active)
+	_close_button = UiStyle.button("閉じる", close_menus, Vector2(180, 56), 22)
+	UiStyle.place(_close_button, 0.5, 1.0, 0, 24)
+	_close_button.visible = false
+	add_child(_close_button)
+
 	status_panel.resume_requested.connect(close_menus)
 	status_panel.title_requested.connect(GameManager.leave_to_title)
 	shop_panel.close_requested.connect(close_menus)
@@ -34,6 +46,7 @@ func _ready() -> void:
 
 func setup(player: PlayerController) -> void:
 	hud.player = player
+	touch.camera_rig = player.camera_rig
 
 
 func _on_leveled_up(old_level: int, new_level: int) -> void:
@@ -68,6 +81,8 @@ func open_shop() -> void:
 func _pause() -> void:
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	GameManager.set_gameplay_input(false)
+	_close_button.visible = touch.touch_active
 
 
 func close_menus() -> void:
@@ -76,3 +91,5 @@ func close_menus() -> void:
 	shop_panel.visible = false
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	GameManager.set_gameplay_input(true)
+	_close_button.visible = false
