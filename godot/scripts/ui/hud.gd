@@ -29,6 +29,10 @@ func _ready() -> void:
 	_build_target_panel()
 	_build_guide()
 	_build_toasts()
+	var cross := Crosshair.new()
+	cross.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cross.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(cross)
 
 
 func _build_player_panel() -> void:

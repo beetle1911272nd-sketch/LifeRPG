@@ -18,6 +18,9 @@ var camera: Camera3D
 var _pivot: Node3D
 var _arm: SpringArm3D
 var _lift: float = 0.0
+var _view_model: Node3D
+var _view_sword: Node3D
+var _view_tween: Tween
 
 
 func _ready() -> void:
@@ -38,6 +41,7 @@ func _ready() -> void:
 	camera.far = 3000.0
 	_arm.add_child(camera)
 	camera.make_current()
+	_build_view_model()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -59,6 +63,7 @@ func _process(delta: float) -> void:
 		_apply_first_person(delta)
 		return
 	_set_first_person_visuals(false)
+	_view_model.visible = false
 	camera.near = 0.15
 	# 見上げるときはカメラが地面に潜らないよう、腕を縮めて寄る
 	var want := ARM_LENGTH
@@ -96,9 +101,78 @@ func _apply_first_person(delta: float) -> void:
 	_lift = 0.0
 	camera.near = 0.05
 	_set_first_person_visuals(true)
+	_view_model.visible = true
+	_connect_attack()
 
 
 func _set_first_person_visuals(on: bool) -> void:
 	var p := target as PlayerController
 	if p != null and p.visual != null:
 		p.visual.visible = not on
+
+
+## 一人称で視界に入る腕と剣。カメラに固定し、攻撃時に振る。
+func _build_view_model() -> void:
+	_view_model = Node3D.new()
+	_view_model.visible = false
+	camera.add_child(_view_model)
+	var tunic := MeshUtil.material(Color(0.14, 0.24, 0.62), 0.7)
+	var skin := MeshUtil.material(Color(0.96, 0.78, 0.65), 0.8)
+	var steel := MeshUtil.material(Color(0.88, 0.92, 1.0), 0.2, Color(0.6, 0.75, 1.0), 0.5)
+	var gold := MeshUtil.material(Color(0.95, 0.8, 0.35), 0.3, Color(0.9, 0.7, 0.2), 0.4)
+
+	var arm_mesh := CapsuleMesh.new()
+	arm_mesh.radius = 0.06
+	arm_mesh.height = 0.55
+	var hand_mesh := SphereMesh.new()
+	hand_mesh.radius = 0.065
+	hand_mesh.height = 0.13
+	# 左腕(下がっている)
+	var left := MeshUtil.instance(arm_mesh, tunic, Vector3(-0.32, -0.34, -0.5))
+	left.rotation_degrees = Vector3(-70.0, 0.0, -12.0)
+	_view_model.add_child(left)
+	_view_model.add_child(MeshUtil.instance(hand_mesh, skin, Vector3(-0.28, -0.3, -0.76)))
+	# 右腕 + 剣(支点を握りに置いて振る)
+	var right := MeshUtil.instance(arm_mesh, tunic, Vector3(0.3, -0.34, -0.5))
+	right.rotation_degrees = Vector3(-70.0, 0.0, 12.0)
+	_view_model.add_child(right)
+	_view_sword = Node3D.new()
+	_view_sword.position = Vector3(0.27, -0.3, -0.76)
+	_view_sword.rotation_degrees = Vector3(-20.0, 0.0, -8.0)
+	_view_model.add_child(_view_sword)
+	_view_sword.add_child(MeshUtil.instance(hand_mesh, skin, Vector3.ZERO))
+	var blade := BoxMesh.new()
+	blade.size = Vector3(0.05, 0.7, 0.015)
+	_view_sword.add_child(MeshUtil.instance(blade, steel, Vector3(0, 0.45, 0)))
+	var guard := BoxMesh.new()
+	guard.size = Vector3(0.2, 0.03, 0.04)
+	_view_sword.add_child(MeshUtil.instance(guard, gold, Vector3(0, 0.1, 0)))
+	for m in _view_model.get_children():
+		_no_shadow(m)
+
+
+func _no_shadow(n: Node) -> void:
+	var gi := n as GeometryInstance3D
+	if gi != null:
+		gi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for c in n.get_children():
+		_no_shadow(c)
+
+
+func _on_attacked() -> void:
+	if _view_sword == null:
+		return
+	if _view_tween != null and _view_tween.is_valid():
+		_view_tween.kill()
+	var rest := Vector3(-20.0, 0.0, -8.0)
+	_view_sword.rotation_degrees = rest
+	_view_tween = create_tween()
+	_view_tween.tween_property(_view_sword, "rotation_degrees", Vector3(-95.0, 0.0, 25.0), 0.09).set_ease(Tween.EASE_OUT)
+	_view_tween.tween_interval(0.06)
+	_view_tween.tween_property(_view_sword, "rotation_degrees", rest, 0.2)
+
+
+func _connect_attack() -> void:
+	var p := target as PlayerController
+	if p != null and p.visual != null and not p.visual.attacked.is_connected(_on_attacked):
+		p.visual.attacked.connect(_on_attacked)

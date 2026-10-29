@@ -87,7 +87,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		var speed := SPRINT_SPEED if Input.is_action_pressed("sprint") else WALK_SPEED
 		horizontal = move_dir * speed
-		if move_dir.length() > 0.1:
+		if GameSettings.first_person and camera_rig != null:
+			model_root.rotation.y = camera_rig.yaw
+		elif move_dir.length() > 0.1:
 			_face(move_dir, delta)
 
 	velocity.x = lerpf(velocity.x, horizontal.x, blend)

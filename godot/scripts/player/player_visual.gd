@@ -12,6 +12,7 @@ var _left_leg: Node3D
 var _right_leg: Node3D
 var _sword_pivot: Node3D
 var _attack_tween: Tween
+signal attacked
 var _flash_base: Dictionary = {}
 var _t: float = 0.0
 
@@ -121,6 +122,7 @@ func animate(speed_ratio: float, delta: float) -> void:
 
 
 func play_attack() -> void:
+	attacked.emit()
 	if _attack_tween != null and _attack_tween.is_valid():
 		_attack_tween.kill()
 	_sword_pivot.rotation.x = SWORD_REST
