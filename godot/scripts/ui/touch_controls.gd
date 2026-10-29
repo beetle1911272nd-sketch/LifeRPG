@@ -24,6 +24,7 @@ var _stick_origin := Vector2.ZERO
 var _stick_vec := Vector2.ZERO
 var _sprinting := false
 var _look_id := -1
+var _look_accum := Vector2.ZERO       # 次のフレームで適用する視点移動量
 var _button_touches: Dictionary = {}  # touch index -> button dict
 var _insets := Vector4.ZERO           # left, top, right, bottom (viewport units)
 var _px := 1.0                        # 1 viewport unit = _px physical pixels
@@ -143,6 +144,11 @@ func _shown(b: Dictionary) -> bool:
 
 
 func _process(_delta: float) -> void:
+	if _look_accum != Vector2.ZERO:
+		if camera_rig != null and not get_tree().paused:
+			camera_rig.yaw -= _look_accum.x * LOOK_SENS
+			camera_rig.pitch = clampf(camera_rig.pitch - _look_accum.y * LOOK_SENS, CameraRig.PITCH_MIN, CameraRig.PITCH_MAX)
+		_look_accum = Vector2.ZERO
 	var should_show := touch_active and not get_tree().paused
 	if get_tree().paused and (_stick_id != -1 or _look_id != -1 or not _button_touches.is_empty()):
 		_release_all()
@@ -214,10 +220,13 @@ func _on_touch_drag(index: int, pos: Vector2, relative: Vector2) -> void:
 			_stick_origin += offset.normalized() * (offset.length() - radius)
 			offset = offset.normalized() * radius
 		_apply_stick(offset / radius)
-	elif index == _look_id and camera_rig != null:
-		var step := (relative * _px).limit_length(MAX_LOOK_STEP)
-		camera_rig.yaw -= step.x * LOOK_SENS
-		camera_rig.pitch = clampf(camera_rig.pitch - step.y * LOOK_SENS, CameraRig.PITCH_MIN, CameraRig.PITCH_MAX)
+	elif _button_touches.has(index):
+		return
+	else:
+		# touch-up を取りこぼして視点用の指が残っても、次のドラッグで復帰できるようにする
+		if _look_id == -1 or index == _look_id:
+			_look_id = index
+			_look_accum += (relative * _px).limit_length(MAX_LOOK_STEP)
 
 
 func _apply_stick(v: Vector2) -> void:
@@ -253,6 +262,7 @@ func _release_all() -> void:
 	_button_touches.clear()
 	_stick_id = -1
 	_look_id = -1
+	_look_accum = Vector2.ZERO
 	_apply_stick(Vector2.ZERO)
 	queue_redraw()
 

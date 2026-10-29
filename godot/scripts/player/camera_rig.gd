@@ -6,7 +6,7 @@ extends Node3D
 
 const MOUSE_SENS := 0.0028
 const PITCH_MIN := -1.25  # 真上から見下ろす限界
-const PITCH_MAX := 0.15  # 少し見上げられる。地面との干渉は下のクリアランス補正で吸収
+const PITCH_MAX := 0.05  # 少し見上げられる。地面との干渉は下のクリアランス補正で吸収
 const MIN_CAMERA_CLEARANCE := 0.6  # カメラと地面の最低距離
 const ARM_LENGTH := 6.5
 
@@ -33,6 +33,7 @@ func _ready() -> void:
 
 	camera = Camera3D.new()
 	camera.fov = 70.0
+	camera.near = 0.15
 	camera.far = 3000.0
 	_arm.add_child(camera)
 	camera.make_current()
@@ -47,7 +48,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if target != null:
 		var goal := target.global_position + Vector3(0.0, 1.6, 0.0)
-		global_position = global_position.lerp(goal, 1.0 - exp(-14.0 * delta))
+		global_position = global_position.lerp(goal, 1.0 - exp(-30.0 * delta))
 	rotation.y = yaw
 	pitch = clampf(pitch, PITCH_MIN, PITCH_MAX)
 	_pivot.rotation.x = pitch
