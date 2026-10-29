@@ -86,3 +86,25 @@ static func place(c: Control, h: float, v: float, margin_x: float = 0.0, margin_
 		c.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	else:
 		c.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+
+## 狭い画面(スマホ)でもパネルが画面外にはみ出さないよう、中身をスクロール可能にして画面内に収める。
+static func make_scrollable(panel: Container, vb: Control, width: float) -> void:
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+	scroll.add_child(vb)
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var fit := func() -> void:
+		if not panel.is_inside_tree():
+			return
+		var vp := panel.get_viewport_rect().size
+		vb.custom_minimum_size.x = minf(width, vp.x - 72.0)
+		scroll.custom_minimum_size = Vector2(
+			vb.custom_minimum_size.x + 8.0,
+			minf(vb.get_combined_minimum_size().y + 4.0, vp.y - 40.0))
+	panel.visibility_changed.connect(func() -> void:
+		if panel.visible:
+			fit.call())
+	panel.resized.connect(fit)
+	panel.get_window().size_changed.connect(fit)

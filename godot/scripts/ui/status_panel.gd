@@ -43,7 +43,7 @@ func _ready() -> void:
 	var vb := VBoxContainer.new()
 	vb.custom_minimum_size = Vector2(520, 0)
 	vb.add_theme_constant_override("separation", 10)
-	panel.add_child(vb)
+	UiStyle.make_scrollable(panel, vb, 520.0)
 
 	vb.add_child(UiStyle.label("STATUS", 34, UiStyle.GOLD))
 	_name_label = UiStyle.label("", 24)
@@ -93,7 +93,7 @@ func _ready() -> void:
 	var sb := VBoxContainer.new()
 	sb.custom_minimum_size = Vector2(420, 0)
 	sb.add_theme_constant_override("separation", 12)
-	_settings_box.add_child(sb)
+	UiStyle.make_scrollable(_settings_box, sb, 420.0)
 	sb.add_child(UiStyle.label("操作設定", 28, UiStyle.GOLD))
 	GameSettings.build_controls(sb)
 	sb.add_child(UiStyle.button("CLOSE", _toggle_settings, Vector2(200, 44), 20))

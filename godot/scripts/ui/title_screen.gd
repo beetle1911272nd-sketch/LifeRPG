@@ -87,7 +87,7 @@ func _build_settings() -> void:
 	var vb := VBoxContainer.new()
 	vb.custom_minimum_size = Vector2(420, 0)
 	vb.add_theme_constant_override("separation", 14)
-	_settings_panel.add_child(vb)
+	UiStyle.make_scrollable(_settings_panel, vb, 420.0)
 	vb.add_child(UiStyle.label("SETTINGS", 32, UiStyle.GOLD))
 	vb.add_child(UiStyle.label("LIFE RPGと同期", 20, UiStyle.GOLD))
 	vb.add_child(UiStyle.label("Web版プロフィールで発行したペアリングJSONを貼り付けます。", 14, UiStyle.GRAY))
