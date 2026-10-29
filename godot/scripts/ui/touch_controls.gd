@@ -10,7 +10,8 @@ signal touch_mode_changed(active: bool)
 const STICK_RADIUS := 64.0       # 物理px基準
 const STICK_ZONE_X := 0.45       # 画面左側のこの割合がジョイスティック領域
 const SPRINT_THRESHOLD := 0.92
-const LOOK_SENS := 0.0055
+const LOOK_SENS := 0.0040
+const MAX_LOOK_STEP := 60.0     # 1イベントの最大移動量(物理px)。急なジャンプを防ぐ
 const PORTRAIT_SCALE := 2.0
 
 var camera_rig: CameraRig
@@ -214,8 +215,9 @@ func _on_touch_drag(index: int, pos: Vector2, relative: Vector2) -> void:
 			offset = offset.normalized() * radius
 		_apply_stick(offset / radius)
 	elif index == _look_id and camera_rig != null:
-		camera_rig.yaw -= relative.x * LOOK_SENS
-		camera_rig.pitch = clampf(camera_rig.pitch - relative.y * LOOK_SENS, CameraRig.PITCH_MIN, CameraRig.PITCH_MAX)
+		var step := (relative * _px).limit_length(MAX_LOOK_STEP)
+		camera_rig.yaw -= step.x * LOOK_SENS
+		camera_rig.pitch = clampf(camera_rig.pitch - step.y * LOOK_SENS, CameraRig.PITCH_MIN, CameraRig.PITCH_MAX)
 
 
 func _apply_stick(v: Vector2) -> void:

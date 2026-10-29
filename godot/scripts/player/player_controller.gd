@@ -91,7 +91,16 @@ func _physics_process(delta: float) -> void:
 	velocity.x = lerpf(velocity.x, horizontal.x, blend)
 	velocity.z = lerpf(velocity.z, horizontal.z, blend)
 	move_and_slide()
+	_recover_if_below_terrain()
 	visual.animate(Vector2(velocity.x, velocity.z).length() / SPRINT_SPEED, delta)
+
+
+## 万一地形の下へ落ちた/めり込んだ場合は地表へ戻す。
+func _recover_if_below_terrain() -> void:
+	var ground := TerrainBuilder.height_at(global_position.x, global_position.z)
+	if global_position.y < ground - 0.6:
+		global_position.y = ground + 0.3
+		velocity.y = 0.0
 
 
 func _face(dir: Vector3, delta: float) -> void:

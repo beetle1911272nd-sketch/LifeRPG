@@ -6,12 +6,13 @@ extends Node3D
 
 const MOUSE_SENS := 0.0028
 const PITCH_MIN := -1.25  # 真上から見下ろす限界
-const PITCH_MAX := 0.30   # 下から見上げる限界
+const PITCH_MAX := -0.08  # これ以上上げるとカメラが地面の下に回り込む
+const MIN_CAMERA_CLEARANCE := 0.6  # カメラと地面の最低距離
 const ARM_LENGTH := 6.5
 
 var target: Node3D
 var yaw: float = 0.0
-var pitch: float = -0.35
+var pitch: float = -0.35  # 起動時は PITCH_MIN〜PITCH_MAX の範囲内
 var camera: Camera3D
 
 var _pivot: Node3D
@@ -47,4 +48,16 @@ func _process(delta: float) -> void:
 		var goal := target.global_position + Vector3(0.0, 1.6, 0.0)
 		global_position = global_position.lerp(goal, 1.0 - exp(-14.0 * delta))
 	rotation.y = yaw
+	pitch = clampf(pitch, PITCH_MIN, PITCH_MAX)
 	_pivot.rotation.x = pitch
+	_keep_camera_above_ground()
+
+
+## 起伏のある地形でもカメラが地面にめり込まないよう、足元の高さより上に持ち上げる。
+func _keep_camera_above_ground() -> void:
+	if camera == null or not camera.is_inside_tree():
+		return
+	var cam_pos := camera.global_position
+	var floor_y := TerrainBuilder.height_at(cam_pos.x, cam_pos.z) + MIN_CAMERA_CLEARANCE
+	if cam_pos.y < floor_y:
+		camera.global_position.y = floor_y
