@@ -20,6 +20,8 @@ var _arm: SpringArm3D
 var _lift: float = 0.0
 var _view_model: Node3D
 var _view_sword: Node3D
+var _vm_left: Node3D
+var _vm_right: Node3D
 var _view_tween: Tween
 
 
@@ -102,6 +104,11 @@ func _apply_first_person(delta: float) -> void:
 	camera.near = 0.05
 	_set_first_person_visuals(true)
 	_view_model.visible = true
+	_view_model.process_priority = 0
+	var vp := get_viewport().get_visible_rect().size
+	var f := clampf((vp.x / maxf(vp.y, 1.0)) / 1.78, 0.38, 1.0)
+	_vm_left.position.x = -0.3 * f
+	_vm_right.position.x = 0.28 * f
 	_connect_attack()
 
 
@@ -127,19 +134,25 @@ func _build_view_model() -> void:
 	var hand_mesh := SphereMesh.new()
 	hand_mesh.radius = 0.065
 	hand_mesh.height = 0.13
-	# 左腕(下がっている)
-	var left := MeshUtil.instance(arm_mesh, tunic, Vector3(-0.32, -0.34, -0.5))
+	# 左右の群に分け、画面の縦横比(縦持ちは狭い)に合わせて横位置を寄せる
+	_vm_left = Node3D.new()
+	_vm_left.position = Vector3(-0.3, -0.3, -0.6)
+	_view_model.add_child(_vm_left)
+	var left := MeshUtil.instance(arm_mesh, tunic, Vector3(0.0, -0.02, 0.0))
 	left.rotation_degrees = Vector3(-70.0, 0.0, -12.0)
-	_view_model.add_child(left)
-	_view_model.add_child(MeshUtil.instance(hand_mesh, skin, Vector3(-0.28, -0.3, -0.76)))
-	# 右腕 + 剣(支点を握りに置いて振る)
-	var right := MeshUtil.instance(arm_mesh, tunic, Vector3(0.3, -0.34, -0.5))
+	_vm_left.add_child(left)
+	_vm_left.add_child(MeshUtil.instance(hand_mesh, skin, Vector3(0.04, 0.02, -0.26)))
+
+	_vm_right = Node3D.new()
+	_vm_right.position = Vector3(0.28, -0.3, -0.6)
+	_view_model.add_child(_vm_right)
+	var right := MeshUtil.instance(arm_mesh, tunic, Vector3(0.0, -0.02, 0.0))
 	right.rotation_degrees = Vector3(-70.0, 0.0, 12.0)
-	_view_model.add_child(right)
+	_vm_right.add_child(right)
 	_view_sword = Node3D.new()
-	_view_sword.position = Vector3(0.27, -0.3, -0.76)
+	_view_sword.position = Vector3(-0.02, 0.02, -0.26)
 	_view_sword.rotation_degrees = Vector3(-20.0, 0.0, -8.0)
-	_view_model.add_child(_view_sword)
+	_vm_right.add_child(_view_sword)
 	_view_sword.add_child(MeshUtil.instance(hand_mesh, skin, Vector3.ZERO))
 	var blade := BoxMesh.new()
 	blade.size = Vector3(0.05, 0.7, 0.015)
@@ -147,8 +160,8 @@ func _build_view_model() -> void:
 	var guard := BoxMesh.new()
 	guard.size = Vector3(0.2, 0.03, 0.04)
 	_view_sword.add_child(MeshUtil.instance(guard, gold, Vector3(0, 0.1, 0)))
-	for m in _view_model.get_children():
-		_no_shadow(m)
+	_no_shadow(_view_model)
+	_view_model.set_deferred("visible", false)
 
 
 func _no_shadow(n: Node) -> void:
