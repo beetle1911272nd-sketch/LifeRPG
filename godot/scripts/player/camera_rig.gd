@@ -104,7 +104,8 @@ func _apply_first_person(delta: float) -> void:
 	camera.near = 0.05
 	_set_first_person_visuals(true)
 	_view_model.visible = true
-	_view_model.process_priority = 0
+	_view_model.scale = Vector3.ONE * 0.62
+	_view_model.position = Vector3(0.0, -0.1, 0.0)
 	var vp := get_viewport().get_visible_rect().size
 	var f := clampf((vp.x / maxf(vp.y, 1.0)) / 1.78, 0.38, 1.0)
 	_vm_left.position.x = -0.3 * f
