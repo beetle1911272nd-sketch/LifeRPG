@@ -44,6 +44,17 @@ def main() -> int:
     updated_cache = list(dict.fromkeys([*cached_files, *ICON_FILES]))
     content = content[:cache_match.start(1)] + json.dumps(updated_cache) + content[cache_match.end(1):]
 
+    pck_marker = "// ABORE network-first pck"
+    fetch_head = "const isNavigate = event.request.mode === 'navigate';"
+    if pck_marker not in content and fetch_head in content:
+        network_first = (
+            fetch_head + "\n\t\t" + pck_marker + "\n"
+            "\t\tif ((event.request.url || '').split('?')[0].endsWith('/index.pck')) {\n"
+            "\t\t\tevent.respondWith(fetch(event.request, { cache: 'no-store' })"
+            ".catch(() => caches.match(event.request)));\n\t\t\treturn;\n\t\t}"
+        )
+        content = content.replace(fetch_head, network_first, 1)
+
     if MARKER in content:
         worker_path.write_text(content, encoding="utf-8")
         return 0
