@@ -31,6 +31,7 @@ theme/custom="res://ui/abore_theme.tres"
 
 GameManager="*res://scripts/systems/game_manager.gd"
 GameSync="*res://scripts/systems/game_sync.gd"
+GameSettings="*res://scripts/systems/game_settings.gd"
 
 [display]
 

@@ -44,8 +44,10 @@ func _ready() -> void:
 		{"action": &"interact", "label": "話す", "phys": 40.0, "needs_interact": true},
 		{"action": &"inventory", "label": "道具", "phys": 28.0, "toggle": true},
 		{"action": &"menu", "label": "☰", "phys": 28.0, "toggle": true},
+		{"action": &"view", "label": "視点", "phys": 28.0, "toggle": true},
 	]
 	get_window().size_changed.connect(_relayout)
+	GameSettings.changed.connect(_relayout)
 	if _detect_touch_device():
 		_set_touch_active(true)
 	_relayout()
@@ -96,13 +98,13 @@ func _relayout() -> void:
 	var right := vp.x - _insets.z - m
 	var bottom := vp.y - _insets.w - m
 	var top := _insets.y + m
-	var r_attack := _v("attack")["phys"] as float / _px
-	var r_small := 40.0 / _px
+	var r_attack := _v("attack")["phys"] as float * GameSettings.button_scale / _px
+	var r_small := 40.0 * GameSettings.button_scale / _px
 
 	var by_action := {}
 	for b in _buttons:
 		by_action[b["action"]] = b
-		b["radius"] = (b["phys"] as float) / _px
+		b["radius"] = (b["phys"] as float) * GameSettings.button_scale / _px
 	var attack: Dictionary = by_action[&"attack"]
 	attack["center"] = Vector2(right - r_attack, bottom - r_attack)
 	var ac: Vector2 = attack["center"]
@@ -114,6 +116,7 @@ func _relayout() -> void:
 	var small_r := (by_action[&"menu"]["radius"] as float)
 	var map_clear := top + 96.0
 	by_action[&"menu"]["center"] = Vector2(right - small_r, map_clear + small_r)
+	by_action[&"view"]["center"] = Vector2(right - small_r, map_clear + small_r * 5.0 + 16.0 / _px)
 	by_action[&"inventory"]["center"] = Vector2(right - small_r, map_clear + small_r * 3.0 + 8.0 / _px)
 	_stick_origin_default = Vector2(left + STICK_RADIUS / _px * 1.4, bottom - STICK_RADIUS / _px * 1.4)
 	queue_redraw()
@@ -158,8 +161,9 @@ func _process(_delta: float) -> void:
 		_apply_mobile_quality(true)
 	if _look_accum != Vector2.ZERO:
 		if camera_rig != null and not get_tree().paused:
-			camera_rig.yaw -= _look_accum.x * LOOK_SENS
-			camera_rig.pitch = clampf(camera_rig.pitch - _look_accum.y * LOOK_SENS, CameraRig.PITCH_MIN, CameraRig.PITCH_MAX)
+			var k := LOOK_SENS * GameSettings.look_sens
+			camera_rig.yaw -= _look_accum.x * k
+			camera_rig.pitch = clampf(camera_rig.pitch - _look_accum.y * k, camera_rig._pitch_min(), camera_rig._pitch_max())
 		_look_accum = Vector2.ZERO
 	var should_show := touch_active and not get_tree().paused
 	if get_tree().paused and (_stick_id != -1 or _look_id != -1 or not _button_touches.is_empty()):
@@ -261,6 +265,10 @@ func _set_axis(action: StringName, strength: float) -> void:
 
 
 func _send(action: StringName, pressed: bool) -> void:
+	if action == &"view":
+		if pressed:
+			GameSettings.set_first_person(not GameSettings.first_person)
+		return
 	var ev := InputEventAction.new()
 	ev.action = action
 	ev.pressed = pressed

@@ -42,8 +42,9 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		yaw -= event.relative.x * MOUSE_SENS
-		pitch = clampf(pitch - event.relative.y * MOUSE_SENS, PITCH_MIN, PITCH_MAX)
+		var k := MOUSE_SENS * GameSettings.look_sens
+		yaw -= event.relative.x * k
+		pitch = clampf(pitch - event.relative.y * k, _pitch_min(), _pitch_max())
 
 
 func _process(delta: float) -> void:
@@ -52,8 +53,13 @@ func _process(delta: float) -> void:
 		var goal := target.get_global_transform_interpolated().origin + Vector3(0.0, 1.6, 0.0)
 		global_position = goal
 	rotation.y = yaw
-	pitch = clampf(pitch, PITCH_MIN, PITCH_MAX)
+	pitch = clampf(pitch, _pitch_min(), _pitch_max())
 	_pivot.rotation.x = pitch
+	if GameSettings.first_person:
+		_apply_first_person(delta)
+		return
+	_set_first_person_visuals(false)
+	camera.near = 0.15
 	# 見上げるときはカメラが地面に潜らないよう、腕を縮めて寄る
 	var want := ARM_LENGTH
 	if pitch > 0.05:
@@ -73,3 +79,26 @@ func _keep_camera_above_ground(delta: float) -> void:
 	var rate := 20.0 if need > _lift else 4.0
 	_lift = lerpf(_lift, need, 1.0 - exp(-rate * delta))
 	_pivot.position.y = _lift
+
+
+func _pitch_min() -> float:
+	return -1.45 if GameSettings.first_person else PITCH_MIN
+
+
+func _pitch_max() -> float:
+	return 1.45 if GameSettings.first_person else PITCH_MAX
+
+
+## 一人称: 腕を0にして頭の位置にカメラを置き、自キャラを隠す。
+func _apply_first_person(delta: float) -> void:
+	_arm.spring_length = lerpf(_arm.spring_length, 0.0, 1.0 - exp(-20.0 * delta))
+	_pivot.position.y = 0.0
+	_lift = 0.0
+	camera.near = 0.05
+	_set_first_person_visuals(true)
+
+
+func _set_first_person_visuals(on: bool) -> void:
+	var p := target as PlayerController
+	if p != null and p.visual != null:
+		p.visual.visible = not on

@@ -24,6 +24,7 @@ var _values: Dictionary = {}
 var _equipment_selectors: Dictionary = {}
 var _name_label: Label
 var _message: Label
+var _settings_box: PanelContainer
 
 
 func _ready() -> void:
@@ -79,12 +80,31 @@ func _ready() -> void:
 	vb.add_child(_message)
 	vb.add_child(UiStyle.button("SYNC NOW", _on_sync_pressed))
 	vb.add_child(UiStyle.button("RESUME", func() -> void: resume_requested.emit()))
+	vb.add_child(UiStyle.button("SETTINGS", _toggle_settings))
 	vb.add_child(UiStyle.button("SAVE", _on_save_pressed))
 	vb.add_child(UiStyle.button("BACK TO TITLE", func() -> void: title_requested.emit()))
 	GameSync.sync_finished.connect(_on_sync_finished)
 
+	_settings_box = PanelContainer.new()
+	_settings_box.add_theme_stylebox_override("panel", UiStyle.panel_box(Color(0.04, 0.05, 0.12, 0.98), UiStyle.GOLD))
+	UiStyle.place(_settings_box, 0.5, 0.5)
+	_settings_box.visible = false
+	add_child(_settings_box)
+	var sb := VBoxContainer.new()
+	sb.custom_minimum_size = Vector2(420, 0)
+	sb.add_theme_constant_override("separation", 12)
+	_settings_box.add_child(sb)
+	sb.add_child(UiStyle.label("操作設定", 28, UiStyle.GOLD))
+	GameSettings.build_controls(sb)
+	sb.add_child(UiStyle.button("CLOSE", _toggle_settings, Vector2(200, 44), 20))
+
+
+func _toggle_settings() -> void:
+	_settings_box.visible = not _settings_box.visible
+
 
 func open() -> void:
+	_settings_box.visible = false
 	_message.text = ""
 	refresh()
 	visible = true

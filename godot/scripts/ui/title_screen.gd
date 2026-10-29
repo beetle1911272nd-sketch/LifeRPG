@@ -109,6 +109,8 @@ func _build_settings() -> void:
 	fullscreen.toggled.connect(_on_fullscreen_toggled)
 	vb.add_child(fullscreen)
 
+	GameSettings.build_controls(vb)
+
 	vb.add_child(UiStyle.label("音量", 18))
 	var volume := HSlider.new()
 	volume.min_value = 0.0
