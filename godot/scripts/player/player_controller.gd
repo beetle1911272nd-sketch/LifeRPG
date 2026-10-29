@@ -32,6 +32,8 @@ func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 2          # プレイヤー
 	collision_mask = 1 | 4       # 地形 + 敵
+	floor_snap_length = 0.5      # 起伏の上を走っても接地を保つ
+	floor_max_angle = deg_to_rad(55.0)
 
 	var shape := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
