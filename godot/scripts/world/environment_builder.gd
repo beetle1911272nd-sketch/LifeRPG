@@ -47,6 +47,7 @@ static func build(parent: Node3D) -> void:
 	parent.add_child(world_env)
 
 	var sun := DirectionalLight3D.new()
+	sun.add_to_group("sun")
 	sun.name = "Sun"
 	sun.rotation_degrees = Vector3(-38.0, -32.0, 0.0)
 	sun.light_color = Color(1.0, 0.81, 0.72)

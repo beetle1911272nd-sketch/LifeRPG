@@ -61,12 +61,22 @@ func _detect_touch_device() -> bool:
 	return false
 
 
+## スマホは描画負荷を下げて、移動中のフレーム落ちによるカクつきを抑える。
+func _apply_mobile_quality(on: bool) -> void:
+	var vp := get_viewport()
+	vp.scaling_3d_scale = 0.7 if on else 1.0
+	RenderingServer.directional_shadow_atlas_set_size(1024 if on else 4096, true)
+	for n in get_tree().get_nodes_in_group("sun"):
+		(n as DirectionalLight3D).shadow_enabled = not on
+
+
 func _set_touch_active(value: bool) -> void:
 	if touch_active == value:
 		return
 	touch_active = value
 	if not value:
 		_release_all()
+	_apply_mobile_quality(value)
 	touch_mode_changed.emit(value)
 	_relayout()
 	queue_redraw()
@@ -144,6 +154,8 @@ func _shown(b: Dictionary) -> bool:
 
 
 func _process(_delta: float) -> void:
+	if touch_active and Engine.get_process_frames() % 30 == 0:
+		_apply_mobile_quality(true)
 	if _look_accum != Vector2.ZERO:
 		if camera_rig != null and not get_tree().paused:
 			camera_rig.yaw -= _look_accum.x * LOOK_SENS
