@@ -21,6 +21,7 @@ var _lift: float = 0.0
 
 
 func _ready() -> void:
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_pivot = Node3D.new()
 	_pivot.name = "PitchPivot"
 	add_child(_pivot)
@@ -47,7 +48,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	if target != null:
-		var goal := target.global_position + Vector3(0.0, 1.6, 0.0)
+		# 物理補間済みの位置に追従させる(生の物理位置だと移動中に震える)
+		var goal := target.get_global_transform_interpolated().origin + Vector3(0.0, 1.6, 0.0)
 		global_position = goal
 	rotation.y = yaw
 	pitch = clampf(pitch, PITCH_MIN, PITCH_MAX)
